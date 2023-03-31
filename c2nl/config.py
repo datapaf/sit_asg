@@ -48,6 +48,7 @@ DATA_OPTIONS = {
     'use_src_char',
     'use_tgt_char',
     'use_src_word',
+    'use_src_line',
     'use_tgt_word',
     'max_src_len',
     'max_tgt_len',
@@ -148,6 +149,8 @@ def add_model_args(parser):
                        help='Use character embedding in the target')
     model.add_argument('--use_src_word', type='bool', default=True,
                        help='Use word embedding in the input')
+    model.add_argument('--use_src_line', type='bool', default=False,
+                       help='Use line embedding in the input')
     model.add_argument('--use_tgt_word', type='bool', default=True,
                        help='Use word embedding in the input')
     model.add_argument('--n_characters', type=int, default=260,

@@ -63,7 +63,8 @@ def process_examples(lang_id,
     if code_tag_type != 'subtoken':
         code.mask = [1 if ct == 'N' else 0 for ct in code_type]
     if guid is not None:
-        code.struc = np.load('../adjacency/{}.npy'.format(guid))
+        #code.struc = np.load('../adjacency/{}.npy'.format(guid))
+        code.line_nums = np.load(f"../lines/{guid}.npy")
 
     if target is not None:
         summ = target.lower() if uncase else target
@@ -95,7 +96,7 @@ def load_data(args, filenames, max_examples=-1, dataset_name='java',
                    tqdm(f, total=count_file_lines(filenames['src']))]
 
     if filenames['tgt'] is not None:
-        with open(filenames['tgt']) as f:
+        with open(filenames['tgt'], encoding='utf-8') as f:
             targets = [line.strip() for line in
                        tqdm(f, total=count_file_lines(filenames['tgt']))]
     else:

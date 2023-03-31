@@ -58,6 +58,8 @@ class Embedder(nn.Module):
             self.dec_input_size += sum(list(map(int, args.nfilters)))
             self.tgt_highway_net = Highway(self.dec_input_size, num_layers=2)
 
+        self.use_src_line = args.use_src_line
+
         self.use_type = args.use_code_type
         if self.use_type:
             self.type_embeddings = nn.Embedding(len(constants.TOKEN_TYPE_MAP),
@@ -77,9 +79,28 @@ class Embedder(nn.Module):
 
         self.dropout = nn.Dropout(args.dropout_emb)
 
+    def make_line_embeddings(self, sample_word_rep, sample_line_nums, max_n_lines):
+        n_lines = sample_line_nums.max().item()
+        emb_d = sample_word_rep.shape[1]
+        res = torch.zeros((max_n_lines, emb_d))
+        for lineno in range(n_lines):
+            res[lineno] = sample_word_rep[sample_word_rep == lineno+1].sum(dim=0)
+        return res.unsqueeze(0)
+    
+    def make_batch_line_embeddings(self, word_rep, line_nums):
+        max_n_lines = line_nums.max().item()
+        res = self.make_line_embeddings(word_rep[0], line_nums[0], max_n_lines)
+        for i in range(1, word_rep.shape[0]):
+            res = torch.cat(
+                (res, self.make_line_embeddings(word_rep[i], line_nums[i], max_n_lines)),
+                dim=0
+            )
+        return res
+
     def forward(self,
                 sequence,
                 sequence_char,
+                line_nums=None,
                 sequence_type=None,
                 mode='encoder',
                 step=None):
@@ -108,6 +129,12 @@ class Embedder(nn.Module):
                     pos_enc = pos_enc.cuda()
                 pos_rep = self.src_pos_embeddings(pos_enc)
                 word_rep = word_rep + pos_rep
+            
+            if self.use_src_line:
+                word_rep = self.src_word_embeddings(sequence.unsqueeze(2))  # B x P x d
+                print("word_rep:", word_rep.shape)
+                word_rep = self.make_batch_line_embeddings(word_rep, line_nums)
+                print("line_rep:", word_rep.shape)
 
         elif mode == 'decoder':
             word_rep = None
@@ -334,6 +361,7 @@ class Transformer(nn.Module):
     def _run_forward_ml(self,
                         code_word_rep,
                         code_char_rep,
+                        line_nums,
                         code_type_rep,
                         code_len,
                         summ_word_rep,
@@ -348,8 +376,10 @@ class Transformer(nn.Module):
         # embed and encode the source sequence
         code_rep = self.embedder(code_word_rep,
                                  code_char_rep,
+                                 line_nums,
                                  code_type_rep,
                                  mode='encoder')
+        #raise Exception("Deal with the code after embedding layer first")
         code_struc_rep = kwargs['code_struc_rep']
         memory_bank, layer_wise_outputs = self.encoder(code_rep, code_len, code_struc_rep)  # B x seq_len x h
 
@@ -402,6 +432,7 @@ class Transformer(nn.Module):
     def forward(self,
                 code_word_rep,
                 code_char_rep,
+                line_nums,
                 code_type_rep,
                 code_len,
                 summ_word_rep,
@@ -426,6 +457,7 @@ class Transformer(nn.Module):
         if self.training:
             return self._run_forward_ml(code_word_rep,
                                         code_char_rep,
+                                        line_nums,
                                         code_type_rep,
                                         code_len,
                                         summ_word_rep,

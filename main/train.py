@@ -222,7 +222,8 @@ def set_defaults(args):
         args.dev_guid_files.append(dev_guid)
 
     # Set model directory
-    subprocess.call(['mkdir', '-p', args.model_dir])
+    #subprocess.call(['mkdir', '-p', args.model_dir])
+    os.makedirs(args.model_dir, exist_ok=True)
 
     # Set model name
     if not args.model_name:

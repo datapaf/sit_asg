@@ -17,6 +17,7 @@ class Code(object):
         self._mask = []
         self._struc = None
         self.src_vocab = None  # required for Copy Attention
+        self._line_nums = None
 
     @property
     def id(self) -> str:
@@ -74,6 +75,15 @@ class Code(object):
     def struc(self, param: np.ndarray) -> None:
         assert isinstance(param, np.ndarray)
         self._struc = param
+
+    @property
+    def line_nums(self) -> np.ndarray:
+        return self._line_nums
+
+    @line_nums.setter
+    def line_nums(self, param: np.ndarray) -> None:
+        assert isinstance(param, np.ndarray)
+        self._line_nums = param
 
     def form_src_vocab(self) -> None:
         self.src_vocab = Vocabulary()

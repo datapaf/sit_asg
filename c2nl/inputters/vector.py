@@ -31,6 +31,8 @@ def vectorize(ex, model):
     if code.struc is not None:
         vectorized_ex['code_struc_rep'] = torch.LongTensor(code.struc)
         vectorized_ex['use_code_struc'] = True
+    if code.line_nums is not None:
+        vectorized_ex['line_nums'] = torch.Tensor(code.line_nums).to(torch.int32)
 
     vectorized_ex['summ'] = None
     vectorized_ex['summ_tokens'] = None
@@ -55,6 +57,7 @@ def vectorize(ex, model):
     vectorized_ex['use_src_char'] = model.args.use_src_char
     vectorized_ex['use_tgt_char'] = model.args.use_tgt_char
     vectorized_ex['use_code_type'] = model.args.use_code_type
+    vectorized_ex['use_src_line'] = model.args.use_src_line
 
     return vectorized_ex
 
@@ -71,6 +74,7 @@ def batchify(batch):
     use_code_type = batch[0]['use_code_type']
     use_code_mask = batch[0]['use_code_mask']
     use_code_struc = batch[0]['use_code_struc']
+    use_src_line = batch[0]['use_src_line']
     ids = [ex['id'] for ex in batch]
     language = [ex['language'] for ex in batch]
 
@@ -83,6 +87,7 @@ def batchify(batch):
     if use_src_char:
         max_char_in_code_token = code_chars[0].size(1)
     code_struc = [ex['code_struc_rep'] for ex in batch]
+    line_nums_list = [ex['line_nums'] for ex in batch]
 
     # Batch Code Representations
     code_len_rep = torch.zeros(batch_size, dtype=torch.long)
@@ -96,6 +101,9 @@ def batchify(batch):
         if use_src_char else None
     code_struc_rep = torch.zeros(batch_size, max_code_len, max_code_len, dtype=torch.long) \
         if use_code_struc else None
+    #line_nums = torch.cat(line_nums, dim=0)
+    line_nums = torch.zeros(batch_size, max_code_len, dtype=torch.int32) \
+        if use_src_line else None
 
     source_maps = []
     src_vocabs = []
@@ -111,6 +119,8 @@ def batchify(batch):
             code_char_rep[i, :code_chars[i].size(0), :].copy_(code_chars[i])
         if use_code_struc:
             code_struc_rep[i, :, :].copy_(code_struc[i][:max_code_len, :max_code_len])
+        if use_src_line:
+            line_nums[i, :line_nums_list[i].size(0)].copy_(line_nums_list[i])
         #
         context = batch[i]['code_tokens']
         vocab = batch[i]['src_vocab']
@@ -178,4 +188,5 @@ def batchify(batch):
         'alignment': alignments,
         'stype': [ex['stype'] for ex in batch],
         'code_struc_rep': code_struc_rep,
+        'line_nums': line_nums,
     }
