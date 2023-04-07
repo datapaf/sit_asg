@@ -88,6 +88,7 @@ def batchify(batch):
         max_char_in_code_token = code_chars[0].size(1)
     code_struc = [ex['code_struc_rep'] for ex in batch]
     line_nums_list = [ex['line_nums'] for ex in batch]
+    max_n_lines = max([ex['line_nums'].max().item() for ex in batch])
 
     # Batch Code Representations
     code_len_rep = torch.zeros(batch_size, dtype=torch.long)
@@ -99,9 +100,8 @@ def batchify(batch):
         if use_code_mask else None
     code_char_rep = torch.zeros(batch_size, max_code_len, max_char_in_code_token, dtype=torch.long) \
         if use_src_char else None
-    code_struc_rep = torch.zeros(batch_size, max_code_len, max_code_len, dtype=torch.long) \
+    code_struc_rep = torch.zeros(batch_size, max_n_lines, max_n_lines, dtype=torch.long) \
         if use_code_struc else None
-    #line_nums = torch.cat(line_nums, dim=0)
     line_nums = torch.zeros(batch_size, max_code_len, dtype=torch.int32) \
         if use_src_line else None
 
@@ -118,7 +118,8 @@ def batchify(batch):
         if use_src_char:
             code_char_rep[i, :code_chars[i].size(0), :].copy_(code_chars[i])
         if use_code_struc:
-            code_struc_rep[i, :, :].copy_(code_struc[i][:max_code_len, :max_code_len])
+            code_struc_rep[i, :, :].copy_(code_struc[i][:max_n_lines, :max_n_lines])
+            #code_struc_rep[i, :, :].copy_(code_struc[i])
         if use_src_line:
             line_nums[i, :line_nums_list[i].size(0)].copy_(line_nums_list[i])
         #

@@ -1,4 +1,10 @@
 data/*
 lines/*
+asg/*
+adjacency/*
+adjacency_unpadded/*
+modelx/*
+PreprocDocstringASGTrain.zip
+PreprocDocstringASGValid.zip
 PreprocDocstringLinesTrain.zip
 PreprocDocstringLinesValid.zip

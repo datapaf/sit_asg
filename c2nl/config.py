@@ -149,7 +149,7 @@ def add_model_args(parser):
                        help='Use character embedding in the target')
     model.add_argument('--use_src_word', type='bool', default=True,
                        help='Use word embedding in the input')
-    model.add_argument('--use_src_line', type='bool', default=False,
+    model.add_argument('--use_src_line', type='bool', default=True,
                        help='Use line embedding in the input')
     model.add_argument('--use_tgt_word', type='bool', default=True,
                        help='Use word embedding in the input')

@@ -59,6 +59,7 @@ class Embedder(nn.Module):
             self.tgt_highway_net = Highway(self.dec_input_size, num_layers=2)
 
         self.use_src_line = args.use_src_line
+        self.use_cuda = args.cuda
 
         self.use_type = args.use_code_type
         if self.use_type:
@@ -95,6 +96,10 @@ class Embedder(nn.Module):
                 (res, self.make_line_embeddings(word_rep[i], line_nums[i], max_n_lines)),
                 dim=0
             )
+
+        if self.use_cuda:
+            res = res.cuda()
+
         return res
 
     def forward(self,
@@ -132,9 +137,9 @@ class Embedder(nn.Module):
             
             if self.use_src_line:
                 word_rep = self.src_word_embeddings(sequence.unsqueeze(2))  # B x P x d
-                print("word_rep:", word_rep.shape)
+                #print("word_rep:", word_rep.shape)
                 word_rep = self.make_batch_line_embeddings(word_rep, line_nums)
-                print("line_rep:", word_rep.shape)
+                #print("line_rep:", word_rep.shape)
 
         elif mode == 'decoder':
             word_rep = None

@@ -63,7 +63,7 @@ def process_examples(lang_id,
     if code_tag_type != 'subtoken':
         code.mask = [1 if ct == 'N' else 0 for ct in code_type]
     if guid is not None:
-        #code.struc = np.load('../adjacency/{}.npy'.format(guid))
+        code.struc = np.load('../adjacency/{}.npy'.format(guid))
         code.line_nums = np.load(f"../lines/{guid}.npy")
 
     if target is not None:
@@ -112,14 +112,22 @@ def load_data(args, filenames, max_examples=-1, dataset_name='java',
         with open(filenames['guid'], encoding='utf-8') as f:
             guids = [line.strip() for line in
                      tqdm(f, total=count_file_lines(filenames['guid']))]
+        with open("../absent_guids.txt", "r") as f:
+            lines = f.readlines()
+            absent_guids = [line.strip() for line in lines]
     else:
         guids = [None] * len(sources)
+        absent_guids = []
 
     assert len(sources) == len(source_tags) == len(targets) == len(guids)
 
     examples = []
     for guid, src, src_tag, tgt in tqdm(zip(guids, sources, source_tags, targets),
                                         total=len(sources)):
+        
+        if guid in absent_guids:
+            continue
+        
         if dataset_name in ['java', 'python']:
             _ex = process_examples(LANG_ID_MAP[DATA_LANG_MAP[dataset_name]],
                                    guid,
