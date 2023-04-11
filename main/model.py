@@ -119,7 +119,7 @@ class Code2NaturalLanguage(object):
 
         code_word_rep = ex['code_word_rep']
         code_char_rep = ex['code_char_rep']
-        line_nums = ex['line_nums']
+        #line_nums = ex['line_nums']
         code_type_rep = ex['code_type_rep']
         code_mask_rep = ex['code_mask_rep']
         code_len = ex['code_len']
@@ -161,7 +161,7 @@ class Code2NaturalLanguage(object):
         # Run forward
         net_loss = self.network(code_word_rep=code_word_rep,
                                 code_char_rep=code_char_rep,
-                                line_nums=line_nums,
+                                #line_nums=line_nums,
                                 code_type_rep=code_type_rep,
                                 code_len=code_len,
                                 summ_word_rep=summ_word_rep,

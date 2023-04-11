@@ -3,6 +3,10 @@ lines/*
 asg/*
 adjacency/*
 adjacency_unpadded/*
+UncompressedLines/*
+adjacency.zip
+CompressedLines.zip
+lines.zip
 modelx/*
 PreprocDocstringASGTrain.zip
 PreprocDocstringASGValid.zip
