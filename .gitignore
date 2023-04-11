@@ -12,3 +12,5 @@ PreprocDocstringASGTrain.zip
 PreprocDocstringASGValid.zip
 PreprocDocstringLinesTrain.zip
 PreprocDocstringLinesValid.zip
+adjacency_padded/*
+AdjacencyUnpadded.zip

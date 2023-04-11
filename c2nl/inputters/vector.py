@@ -93,7 +93,8 @@ def batchify(batch):
     #TODO: make max_line_len and max_n_lines not magic numbers
     max_line_len = 361
     #max_n_lines = max([ex['line_nums'].max().item() for ex in batch])
-    max_n_lines = 107
+    #max_n_lines = 107
+    max_n_lines = max([len(ex['line_nums']) for ex in batch])
 
 
     # Batch Code Representations
@@ -138,7 +139,8 @@ def batchify(batch):
         if use_src_char:
             code_char_rep[i, :code_chars[i].size(0), :].copy_(code_chars[i])
         if use_code_struc:
-            code_struc_rep[i, :, :].copy_(code_struc[i][:max_n_lines, :max_n_lines])
+            cur_n_lines = code_struc[i].shape[0]
+            code_struc_rep[i, :cur_n_lines, :cur_n_lines].copy_(code_struc[i])
         #
         context = batch[i]['code_tokens']
         vocab = batch[i]['src_vocab']

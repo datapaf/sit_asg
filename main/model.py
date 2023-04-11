@@ -143,8 +143,8 @@ class Code2NaturalLanguage(object):
                 code_word_rep = code_word_rep.cuda(non_blocking=True)
             if code_char_rep is not None:
                 code_char_rep = code_char_rep.cuda(non_blocking=True)
-            if line_nums is not None:
-                line_nums = line_nums.cuda(non_blocking=True)
+            # if line_nums is not None:
+            #     line_nums = line_nums.cuda(non_blocking=True)
             if code_type_rep is not None:
                 code_type_rep = code_type_rep.cuda(non_blocking=True)
             if code_mask_rep is not None:
