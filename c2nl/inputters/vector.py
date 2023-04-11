@@ -139,8 +139,8 @@ def batchify(batch):
         if use_src_char:
             code_char_rep[i, :code_chars[i].size(0), :].copy_(code_chars[i])
         if use_code_struc:
-            cur_n_lines = code_struc[i].shape[0]
-            code_struc_rep[i, :cur_n_lines, :cur_n_lines].copy_(code_struc[i])
+            code_struc_shape = code_struc[i].shape
+            code_struc_rep[i, :code_struc_shape[0], :code_struc_shape[1]].copy_(code_struc[i])
         #
         context = batch[i]['code_tokens']
         vocab = batch[i]['src_vocab']
