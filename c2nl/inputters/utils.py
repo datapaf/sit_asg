@@ -4,6 +4,7 @@ import string
 from collections import Counter
 from tqdm import tqdm
 import numpy as np
+import os
 
 from c2nl.objects import Code, Summary
 from c2nl.inputters.vocabulary import Vocabulary, UnicodeCharsVocabulary
@@ -37,6 +38,7 @@ def process_examples(lang_id,
                      source_tag,
                      target,
                      max_src_len,
+                     max_line_len,
                      max_tgt_len,
                      code_tag_type,
                      uncase=False,
@@ -59,12 +61,13 @@ def process_examples(lang_id,
     code.text = source
     code.language = lang_id
     code.tokens = code_tokens
+    code.max_line_len = max_line_len
     code.type = [TAG_TYPE_MAP.get(ct, 1) for ct in code_type]
     if code_tag_type != 'subtoken':
         code.mask = [1 if ct == 'N' else 0 for ct in code_type]
     if guid is not None:
         code.struc = np.load('../adjacency/{}.npy'.format(guid))
-        code.line_nums = np.load(f"../lines/{guid}.npy")
+        code.line_lengths = np.load(f"../lines/{guid}.npy")
 
     if target is not None:
         summ = target.lower() if uncase else target
@@ -112,12 +115,14 @@ def load_data(args, filenames, max_examples=-1, dataset_name='java',
         with open(filenames['guid'], encoding='utf-8') as f:
             guids = [line.strip() for line in
                      tqdm(f, total=count_file_lines(filenames['guid']))]
-        with open("../absent_guids.txt", "r") as f:
-            lines = f.readlines()
-            absent_guids = [line.strip() for line in lines]
+        if os.path.isfile("../ignore_guids.txt"):
+            with open("../ignore_guids.txt", "r") as f:
+                ignore_guids = [guid.strip() for guid in f.readlines()]
+        else:
+            ignore_guids = []
     else:
         guids = [None] * len(sources)
-        absent_guids = []
+        ignore_guids = []
 
     assert len(sources) == len(source_tags) == len(targets) == len(guids)
 
@@ -125,7 +130,7 @@ def load_data(args, filenames, max_examples=-1, dataset_name='java',
     for guid, src, src_tag, tgt in tqdm(zip(guids, sources, source_tags, targets),
                                         total=len(sources)):
         
-        if guid in absent_guids:
+        if guid in ignore_guids:
             continue
         
         if dataset_name in ['java', 'python']:
@@ -135,6 +140,7 @@ def load_data(args, filenames, max_examples=-1, dataset_name='java',
                                    src_tag,
                                    tgt,
                                    args.max_src_len,
+                                   args.max_line_len,
                                    args.max_tgt_len,
                                    args.code_tag_type,
                                    uncase=args.uncase,

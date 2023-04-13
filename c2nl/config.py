@@ -51,6 +51,7 @@ DATA_OPTIONS = {
     'use_src_line',
     'use_tgt_word',
     'max_src_len',
+    'max_line_len',
     'max_tgt_len',
     'src_vocab_size',
     'tgt_vocab_size',
@@ -94,8 +95,8 @@ def add_model_args(parser):
     data = parser.add_argument_group('Data parameters')
     data.add_argument('--max_src_len', type=int, default=400,
                       help='Maximum allowed length for the source sequence')
-    # data.add_argument('--max_line_len', type=int, default=361,
-    #                   help='Maximum allowed length for a line in a source code')
+    data.add_argument('--max_line_len', type=int, default=361,
+                      help='Maximum allowed length for a line in a source code')
     # data.add_argument('--max_n_lines', type=int, default=107,
     #                   help='Maximum allowed number of lines in a source code')
     data.add_argument('--max_tgt_len', type=int, default=50,

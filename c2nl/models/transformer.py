@@ -78,7 +78,7 @@ class Embedder(nn.Module):
             self.tgt_pos_embeddings = nn.Embedding(args.max_tgt_len + 2,
                                                    self.dec_input_size)
 
-        self.aggr = nn.AvgPool2d(kernel_size=(361, 1))
+        self.aggr = nn.AvgPool2d(kernel_size=(args.max_line_len, 1))
         
         self.dropout = nn.Dropout(args.dropout_emb)
 

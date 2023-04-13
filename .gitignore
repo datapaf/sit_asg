@@ -4,9 +4,7 @@ asg/*
 adjacency/*
 adjacency_unpadded/*
 UncompressedLines/*
-adjacency.zip
 CompressedLines.zip
-lines.zip
 modelx/*
 PreprocDocstringASGTrain.zip
 PreprocDocstringASGValid.zip
@@ -14,3 +12,7 @@ PreprocDocstringLinesTrain.zip
 PreprocDocstringLinesValid.zip
 adjacency_padded/*
 AdjacencyUnpadded.zip
+AdjacencyUnpaddedClipped.zip
+tokens2orig.pkl
+PreprocDocstringASGTest.zip
+PreprocDocstringLinesTest.zip

@@ -17,7 +17,8 @@ class Code(object):
         self._mask = []
         self._struc = None
         self.src_vocab = None  # required for Copy Attention
-        self._line_nums = None
+        self._line_counts = None
+        self._max_line_len = None
 
     @property
     def id(self) -> str:
@@ -77,13 +78,21 @@ class Code(object):
         self._struc = param
 
     @property
-    def line_nums(self) -> np.ndarray:
-        return self._line_nums
+    def line_lengths(self) -> np.ndarray:
+        return self._line_lengths
 
-    @line_nums.setter
-    def line_nums(self, param: np.ndarray) -> None:
+    @line_lengths.setter
+    def line_lengths(self, param: np.ndarray) -> None:
         assert isinstance(param, np.ndarray)
-        self._line_nums = param
+        self._line_lengths = param
+
+    @property
+    def max_line_len(self) -> int:
+        return self._max_line_len
+
+    @max_line_len.setter
+    def max_line_len(self, param: int) -> None:
+        self._max_line_len = param
 
     def form_src_vocab(self) -> None:
         self.src_vocab = Vocabulary()

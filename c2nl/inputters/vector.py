@@ -31,8 +31,9 @@ def vectorize(ex, model):
     if code.struc is not None:
         vectorized_ex['code_struc_rep'] = torch.LongTensor(code.struc)
         vectorized_ex['use_code_struc'] = True
-    if code.line_nums is not None:
-        vectorized_ex['line_nums'] = torch.Tensor(code.line_nums).to(torch.int32)
+    if code.line_lengths is not None:
+        vectorized_ex['line_lengths'] = code.line_lengths
+        vectorized_ex['max_line_len'] = code.max_line_len
 
     vectorized_ex['summ'] = None
     vectorized_ex['summ_tokens'] = None
@@ -61,8 +62,6 @@ def vectorize(ex, model):
 
     return vectorized_ex
 
-def compose_lines_cwr(code_words, max_line_len, max_n_lines):
-    pass
 
 def batchify(batch):
     """Gather a batch of individual examples into one batch."""
@@ -77,6 +76,7 @@ def batchify(batch):
     use_code_mask = batch[0]['use_code_mask']
     use_code_struc = batch[0]['use_code_struc']
     use_src_line = batch[0]['use_src_line']
+    
     ids = [ex['id'] for ex in batch]
     language = [ex['language'] for ex in batch]
 
@@ -89,12 +89,11 @@ def batchify(batch):
     if use_src_char:
         max_char_in_code_token = code_chars[0].size(1)
     code_struc = [ex['code_struc_rep'] for ex in batch]
-    line_nums_list = [ex['line_nums'] for ex in batch]
-    #TODO: make max_line_len and max_n_lines not magic numbers
-    max_line_len = 361
-    #max_n_lines = max([ex['line_nums'].max().item() for ex in batch])
-    #max_n_lines = 107
-    max_n_lines = max([len(ex['line_nums']) for ex in batch])
+    line_lengths = [ex['line_lengths'] for ex in batch]
+    #TODO: make max_line_len not magic number
+    #max_line_len = 361
+    max_line_len = batch[0]['max_line_len']
+    max_n_lines = max([ex['code_struc_rep'].shape[0] for ex in batch])
 
 
     # Batch Code Representations
@@ -116,8 +115,6 @@ def batchify(batch):
         if use_src_char else None
     code_struc_rep = torch.zeros(batch_size, max_n_lines, max_n_lines, dtype=torch.long) \
         if use_code_struc else None
-    # line_nums = torch.zeros(batch_size, max_code_len, dtype=torch.int32) \
-    #     if use_src_line else None
 
     source_maps = []
     src_vocabs = []
@@ -125,10 +122,10 @@ def batchify(batch):
         code_len_rep[i] = code_words[i].size(0)
         if use_src_word:
             if use_src_line:
-                for lineno, line_len in enumerate(line_nums_list[i]):
+                for lineno, line_len in enumerate(line_lengths[i]):
                     left_bound = lineno * max_line_len
                     right_bound = left_bound + line_len
-                    n_prev_words = sum(line_nums_list[i][:lineno]) if lineno != 0 else 0
+                    n_prev_words = sum(line_lengths[i][:lineno]) if lineno != 0 else 0
                     code_word_rep[i, left_bound:right_bound].copy_(code_words[i][n_prev_words:n_prev_words+line_len])
             else:
                 code_word_rep[i, :code_words[i].size(0)].copy_(code_words[i])
@@ -208,5 +205,4 @@ def batchify(batch):
         'alignment': alignments,
         'stype': [ex['stype'] for ex in batch],
         'code_struc_rep': code_struc_rep,
-        #'line_nums': line_nums,
     }
