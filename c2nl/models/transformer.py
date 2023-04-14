@@ -484,6 +484,7 @@ class Transformer(nn.Module):
         else:
             return self.decode(code_word_rep,
                                code_char_rep,
+                               line_lens,
                                code_type_rep,
                                code_len,
                                src_map,
@@ -619,6 +620,7 @@ class Transformer(nn.Module):
     def decode(self,
                code_word_rep,
                code_char_rep,
+               line_lens,
                code_type_rep,
                code_len,
                src_map,
@@ -627,6 +629,7 @@ class Transformer(nn.Module):
 
         word_rep = self.embedder(code_word_rep,
                                  code_char_rep,
+                                 line_lens,
                                  code_type_rep,
                                  mode='encoder')
         code_struc_rep = kwargs['code_struc_rep']
