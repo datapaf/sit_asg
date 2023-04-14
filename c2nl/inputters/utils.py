@@ -38,7 +38,7 @@ def process_examples(lang_id,
                      source_tag,
                      target,
                      max_src_len,
-                     max_line_len,
+                     #max_line_len,
                      max_tgt_len,
                      code_tag_type,
                      uncase=False,
@@ -61,7 +61,7 @@ def process_examples(lang_id,
     code.text = source
     code.language = lang_id
     code.tokens = code_tokens
-    code.max_line_len = max_line_len
+    #code.max_line_len = max_line_len
     code.type = [TAG_TYPE_MAP.get(ct, 1) for ct in code_type]
     if code_tag_type != 'subtoken':
         code.mask = [1 if ct == 'N' else 0 for ct in code_type]
@@ -140,7 +140,7 @@ def load_data(args, filenames, max_examples=-1, dataset_name='java',
                                    src_tag,
                                    tgt,
                                    args.max_src_len,
-                                   args.max_line_len,
+                                   #args.max_line_len,
                                    args.max_tgt_len,
                                    args.code_tag_type,
                                    uncase=args.uncase,
