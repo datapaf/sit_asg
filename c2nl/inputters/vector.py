@@ -92,7 +92,7 @@ def batchify(batch):
     line_lengths = [ex['line_lengths'] for ex in batch]
     #TODO: make max_line_len not magic number
     #max_line_len = 361
-    max_line_len = batch[0]['max_line_len']
+    #max_line_len = batch[0]['max_line_len']
     max_n_lines = max([ex['code_struc_rep'].shape[0] for ex in batch])
 
 
@@ -100,10 +100,11 @@ def batchify(batch):
     code_len_rep = torch.zeros(batch_size, dtype=torch.long)
     
     if use_src_word:
-        if use_src_line:
-            code_word_rep = torch.zeros(batch_size, max_line_len * max_n_lines, dtype=torch.long)
-        else:
-            code_word_rep = torch.zeros(batch_size, max_code_len, dtype=torch.long)
+        # if use_src_line:
+        #     code_word_rep = torch.zeros(batch_size, max_line_len * max_n_lines, dtype=torch.long)
+        # else:
+        #     code_word_rep = torch.zeros(batch_size, max_code_len, dtype=torch.long)
+        code_word_rep = torch.zeros(batch_size, max_code_len, dtype=torch.long)
     else:
         code_word_rep = None
             
@@ -121,14 +122,15 @@ def batchify(batch):
     for i in range(batch_size):
         code_len_rep[i] = code_words[i].size(0)
         if use_src_word:
-            if use_src_line:
-                for lineno, line_len in enumerate(line_lengths[i]):
-                    left_bound = lineno * max_line_len
-                    right_bound = left_bound + line_len
-                    n_prev_words = sum(line_lengths[i][:lineno]) if lineno != 0 else 0
-                    code_word_rep[i, left_bound:right_bound].copy_(code_words[i][n_prev_words:n_prev_words+line_len])
-            else:
-                code_word_rep[i, :code_words[i].size(0)].copy_(code_words[i])
+            # if use_src_line:
+            #     for lineno, line_len in enumerate(line_lengths[i]):
+            #         left_bound = lineno * max_line_len
+            #         right_bound = left_bound + line_len
+            #         n_prev_words = sum(line_lengths[i][:lineno]) if lineno != 0 else 0
+            #         code_word_rep[i, left_bound:right_bound].copy_(code_words[i][n_prev_words:n_prev_words+line_len])
+            # else:
+            #     code_word_rep[i, :code_words[i].size(0)].copy_(code_words[i])
+            code_word_rep[i, :code_words[i].size(0)].copy_(code_words[i])
         if use_code_type:
             code_type_rep[i, :code_type[i].size(0)].copy_(code_type[i])
         if use_code_mask:
@@ -205,4 +207,5 @@ def batchify(batch):
         'alignment': alignments,
         'stype': [ex['stype'] for ex in batch],
         'code_struc_rep': code_struc_rep,
+        'line_lens': line_lengths
     }

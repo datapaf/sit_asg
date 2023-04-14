@@ -78,36 +78,43 @@ class Embedder(nn.Module):
             self.tgt_pos_embeddings = nn.Embedding(args.max_tgt_len + 2,
                                                    self.dec_input_size)
 
-        self.aggr = nn.AvgPool2d(kernel_size=(args.max_line_len, 1))
+        #self.aggr = nn.AvgPool2d(kernel_size=(args.max_line_len, 1))
         
         self.dropout = nn.Dropout(args.dropout_emb)
-
-    # def make_line_embeddings(self, sample_word_rep, sample_line_nums, max_n_lines):
-    #     n_lines = sample_line_nums.max().item()
-    #     emb_d = sample_word_rep.shape[1]
-    #     res = torch.zeros((max_n_lines, emb_d))
-    #     for lineno in range(n_lines):
-    #         res[lineno] = sample_word_rep[sample_word_rep == lineno+1].sum(dim=0)
-    #     return res.unsqueeze(0)
     
-    # def make_batch_line_embeddings(self, word_rep, line_nums):
-    #     max_n_lines = line_nums.max().item()
-    #     res = self.make_line_embeddings(word_rep[0], line_nums[0], max_n_lines)
-    #     for i in range(1, word_rep.shape[0]):
-    #         res = torch.cat(
-    #             (res, self.make_line_embeddings(word_rep[i], line_nums[i], max_n_lines)),
-    #             dim=0
-    #         )
+    def make_line_embeddings(self, sample_word_rep, sample_line_lens, max_n_lines):
+        n_lines = len(sample_line_lens)
+        emb_d = sample_word_rep.shape[1]
+        res = torch.zeros((max_n_lines, emb_d))
+        for i in range(n_lines):
+            n_prev_words = sum(sample_line_lens[:i]) if i != 0 else 0
+            res[i] = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]].sum(dim=0)
+        return res.unsqueeze(0)
 
-    #     if self.use_cuda:
-    #         res = res.cuda()
+    def get_max_n_lines(self, line_lens):
+        res = -1
+        for sample_line_lens in line_lens:
+            res = max(res, len(sample_line_lens))
+        return res
 
-    #     return res
+    def make_batch_line_embeddings(self, word_rep, line_lens):
+        max_n_lines = self.get_max_n_lines(line_lens)
+        res = self.make_line_embeddings(word_rep[0], line_lens[0], max_n_lines)
+        for i in range(1, word_rep.shape[0]):
+            res = torch.cat(
+                (res, self.make_line_embeddings(word_rep[i], line_lens[i], max_n_lines)),
+                dim=0
+            )
+
+        if self.use_cuda:
+            res = res.cuda()
+
+        return res
 
     def forward(self,
                 sequence,
                 sequence_char,
-                #line_nums=None,
+                line_lens=None,
                 sequence_type=None,
                 mode='encoder',
                 step=None):
@@ -139,7 +146,8 @@ class Embedder(nn.Module):
             
             if self.use_src_line:
                 word_rep = self.src_word_embeddings(sequence.unsqueeze(2))  # B x P x d
-                word_rep = self.aggr(word_rep)
+                #word_rep = self.aggr(word_rep)
+                word_rep = self.make_batch_line_embeddings(word_rep, line_lens)
 
         elif mode == 'decoder':
             word_rep = None
@@ -366,7 +374,7 @@ class Transformer(nn.Module):
     def _run_forward_ml(self,
                         code_word_rep,
                         code_char_rep,
-                        #line_nums,
+                        line_lens,
                         code_type_rep,
                         code_len,
                         summ_word_rep,
@@ -381,7 +389,7 @@ class Transformer(nn.Module):
         # embed and encode the source sequence
         code_rep = self.embedder(code_word_rep,
                                  code_char_rep,
-                                 #line_nums,
+                                 line_lens,
                                  code_type_rep,
                                  mode='encoder')
         #raise Exception("Deal with the code after embedding layer first")
@@ -437,7 +445,7 @@ class Transformer(nn.Module):
     def forward(self,
                 code_word_rep,
                 code_char_rep,
-                #line_nums,
+                line_lens,
                 code_type_rep,
                 code_len,
                 summ_word_rep,
@@ -462,7 +470,7 @@ class Transformer(nn.Module):
         if self.training:
             return self._run_forward_ml(code_word_rep,
                                         code_char_rep,
-                                        #line_nums,
+                                        line_lens,
                                         code_type_rep,
                                         code_len,
                                         summ_word_rep,
