@@ -675,8 +675,8 @@ def main(args):
                     model.optimizer.param_groups[0]['lr'] * args.lr_decay
 
             train(args, train_loader, model, stats)
-            # if epoch % 10 != 0:
-            #     continue
+            if epoch % 10 != 0:
+                continue
             result = validate_official(args, dev_loader, model, stats)
 
             # Save best valid
