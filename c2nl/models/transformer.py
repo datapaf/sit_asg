@@ -145,7 +145,6 @@ class Embedder(nn.Module):
             
             if self.use_src_line:
                 word_rep = self.src_word_embeddings(sequence.unsqueeze(2))  # B x P x d
-                print(word_rep.unsqueeze(1).shape)
                 word_rep = self.aggr(word_rep.unsqueeze(1)).squeeze(1)
 
         elif mode == 'decoder':
