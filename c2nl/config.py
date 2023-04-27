@@ -95,7 +95,7 @@ def add_model_args(parser):
     data = parser.add_argument_group('Data parameters')
     data.add_argument('--max_src_len', type=int, default=400,
                       help='Maximum allowed length for the source sequence')
-    data.add_argument('--max_line_len', type=int, default=361,
+    data.add_argument('--max_line_len', type=int, default=50,
                       help='Maximum allowed length for a line in a source code')
     # data.add_argument('--max_n_lines', type=int, default=107,
     #                   help='Maximum allowed number of lines in a source code')

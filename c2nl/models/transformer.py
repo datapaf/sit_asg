@@ -78,7 +78,13 @@ class Embedder(nn.Module):
             self.tgt_pos_embeddings = nn.Embedding(args.max_tgt_len + 2,
                                                    self.dec_input_size)
 
-        self.aggr = nn.AvgPool2d(kernel_size=(args.max_line_len, 1))
+        #self.aggr = nn.AvgPool2d(kernel_size=(args.max_line_len, 1))
+        self.aggr = nn.Conv2d(
+            in_channels=1,
+            out_channels=1,
+            kernel_size=(args.max_line_len, 1),
+            stride=(args.max_line_len, 1)
+        )
         
         self.dropout = nn.Dropout(args.dropout_emb)
 
@@ -139,7 +145,8 @@ class Embedder(nn.Module):
             
             if self.use_src_line:
                 word_rep = self.src_word_embeddings(sequence.unsqueeze(2))  # B x P x d
-                word_rep = self.aggr(word_rep)
+                print(word_rep.unsqueeze(1).shape)
+                word_rep = self.aggr(word_rep.unsqueeze(1)).squeeze(1)
 
         elif mode == 'decoder':
             word_rep = None
