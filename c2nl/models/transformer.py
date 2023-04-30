@@ -79,6 +79,7 @@ class Embedder(nn.Module):
                                                    self.dec_input_size)
 
         #self.aggr = nn.AvgPool2d(kernel_size=(args.max_line_len, 1))
+        self.attn = nn.MultiheadAttention(args.emsize, 1)
         
         self.dropout = nn.Dropout(args.dropout_emb)
     
@@ -88,7 +89,10 @@ class Embedder(nn.Module):
         res = torch.zeros((max_n_lines, emb_d))
         for i in range(n_lines):
             n_prev_words = sum(sample_line_lens[:i]) if i != 0 else 0
-            res[i] = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]].sum(dim=0)
+            #res[i] = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]].sum(dim=0)
+            v = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]]
+            attn_out, attn_out_w = self.attn(v, v, v)
+            res[i] = attn_out.sum(dim=0)
         return res.unsqueeze(0)
 
     def get_max_n_lines(self, line_lens):
