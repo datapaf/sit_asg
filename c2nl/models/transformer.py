@@ -31,12 +31,12 @@ class Embedder(nn.Module):
             self.src_word_embeddings = Embeddings(args.emsize,
                                                   args.src_vocab_size,
                                                   constants.PAD)
-            self.enc_input_size += args.emsize
+            self.enc_input_size += args.emsize * args.max_line_len
         if self.use_tgt_word:
-            self.tgt_word_embeddings = Embeddings(args.emsize,
+            self.tgt_word_embeddings = Embeddings(args.emsize * args.max_line_len,
                                                   args.tgt_vocab_size,
                                                   constants.PAD)
-            self.dec_input_size += args.emsize
+            self.dec_input_size += args.emsize *  args.max_line_len
 
         self.use_src_char = args.use_src_char
         self.use_tgt_char = args.use_tgt_char
@@ -79,12 +79,13 @@ class Embedder(nn.Module):
                                                    self.dec_input_size)
 
         #self.aggr = nn.AvgPool2d(kernel_size=(args.max_line_len, 1))
-        self.aggr = nn.Conv2d(
-            in_channels=1,
-            out_channels=1,
-            kernel_size=(args.max_line_len, 1),
-            stride=(args.max_line_len, 1)
-        )
+        # self.aggr = nn.Conv2d(
+        #     in_channels=1,
+        #     out_channels=1,
+        #     kernel_size=(args.max_line_len, 1),
+        #     stride=(args.max_line_len, 1)
+        # )
+        self.max_line_len = args.max_line_len
         
         self.dropout = nn.Dropout(args.dropout_emb)
 
@@ -145,7 +146,11 @@ class Embedder(nn.Module):
             
             if self.use_src_line:
                 word_rep = self.src_word_embeddings(sequence.unsqueeze(2))  # B x P x d
-                word_rep = self.aggr(word_rep.unsqueeze(1)).squeeze(1)
+                b, n, d = word_rep.shape
+                print(word_rep.shape)
+                #word_rep = self.aggr(word_rep.unsqueeze(1)).squeeze(1)
+                word_rep = word_rep.reshape(b, n // self.max_line_len, d * self.max_line_len)
+                print(word_rep.shape)
 
         elif mode == 'decoder':
             word_rep = None
@@ -169,6 +174,7 @@ class Embedder(nn.Module):
                 if word_rep.is_cuda:
                     pos_enc = pos_enc.cuda()
                 pos_rep = self.tgt_pos_embeddings(pos_enc)
+                print(word_rep.shape, pos_rep.shape)
                 word_rep = word_rep + pos_rep
 
         else:
