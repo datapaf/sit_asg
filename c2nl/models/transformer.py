@@ -396,7 +396,6 @@ class Transformer(nn.Module):
                                  line_lens,
                                  code_type_rep,
                                  mode='encoder')
-        #raise Exception("Deal with the code after embedding layer first")
         code_struc_rep = kwargs['code_struc_rep']
         memory_bank, layer_wise_outputs = self.encoder(code_rep, code_len, code_struc_rep)  # B x seq_len x h
 
