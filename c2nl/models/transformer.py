@@ -87,11 +87,14 @@ class Embedder(nn.Module):
         n_lines = len(sample_line_lens)
         emb_d = sample_word_rep.shape[1]
         res = torch.zeros((max_n_lines, emb_d))
+
+        if self.use_cuda:
+            res = res.cuda()
+
         for i in range(n_lines):
             n_prev_words = sum(sample_line_lens[:i]) if i != 0 else 0
-            #res[i] = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]].sum(dim=0)
             v = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]]
-            attn_out, attn_out_w = self.attn(v, v, v)
+            attn_out = self.attn(v, v, v, need_weights=False)
             res[i] = attn_out.sum(dim=0)
         return res.unsqueeze(0)
 
@@ -104,14 +107,15 @@ class Embedder(nn.Module):
     def make_batch_line_embeddings(self, word_rep, line_lens):
         max_n_lines = self.get_max_n_lines(line_lens)
         res = self.make_line_embeddings(word_rep[0], line_lens[0], max_n_lines)
+        
+        if self.use_cuda:
+            res = res.cuda()
+
         for i in range(1, word_rep.shape[0]):
             res = torch.cat(
                 (res, self.make_line_embeddings(word_rep[i], line_lens[i], max_n_lines)),
                 dim=0
             )
-
-        if self.use_cuda:
-            res = res.cuda()
 
         return res
 
