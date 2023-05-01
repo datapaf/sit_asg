@@ -94,6 +94,8 @@ class Embedder(nn.Module):
         for i in range(n_lines):
             n_prev_words = sum(sample_line_lens[:i]) if i != 0 else 0
             v = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]]
+            if self.use_cuda:
+                v = v.cuda()
             attn_out, _ = self.attn(v, v, v, need_weights=False)
             res[i] = attn_out.sum(dim=0)
         return res.unsqueeze(0)
