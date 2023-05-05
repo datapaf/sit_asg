@@ -112,7 +112,6 @@ class Translator(object):
         # (1) Run the encoder on the src.
         code_rep = embedder(code_word_rep,
                             code_char_rep,
-                            line_lens,
                             code_type_rep,
                             mode='encoder')
         # memory_bank: B x P x h; enc_states: l*num_directions x B x h
