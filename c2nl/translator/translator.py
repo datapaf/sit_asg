@@ -64,7 +64,6 @@ class Translator(object):
         alignment = batch_inputs['alignment']
         blank = batch_inputs['blank']
         fill = batch_inputs['fill']
-        line_lens = batch_inputs['line_lens']
 
         beam_size = self.beam_size
         batch_size = code_len.size(0)
