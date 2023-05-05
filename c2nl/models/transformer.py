@@ -96,7 +96,9 @@ class Embedder(nn.Module):
             v = sample_word_rep[n_prev_words:n_prev_words+sample_line_lens[i]]
             if self.use_cuda:
                 v = v.cuda()
+            v = v.unsqueeze(1)
             attn_out, _ = self.attn(v, v, v, need_weights=False)
+            attn_out = attn_out.squeeze(1)
             res[i] = attn_out.sum(dim=0)
         return res.unsqueeze(0)
 
