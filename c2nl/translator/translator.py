@@ -64,6 +64,7 @@ class Translator(object):
         alignment = batch_inputs['alignment']
         blank = batch_inputs['blank']
         fill = batch_inputs['fill']
+        line_lens = batch_inputs['line_lens']
 
         beam_size = self.beam_size
         batch_size = code_len.size(0)
@@ -111,6 +112,7 @@ class Translator(object):
         # (1) Run the encoder on the src.
         code_rep = embedder(code_word_rep,
                             code_char_rep,
+                            line_lens,
                             code_type_rep,
                             mode='encoder')
         # memory_bank: B x P x h; enc_states: l*num_directions x B x h
