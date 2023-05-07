@@ -17,3 +17,14 @@ tokens2orig.pkl
 PreprocDocstringASGTest.zip
 PreprocDocstringLinesTest.zip
 data.zip
+c2nl/__pycache__/*
+c2nl/decoders/__pycache__/*
+c2nl/encoders/__pycache__/*
+c2nl/eval/__pycache__/*
+c2nl/inputters/__pycache__/*
+c2nl/models/__pycache__/*
+c2nl/modules/__pycache__/*
+c2nl/objects/__pycache__/*
+c2nl/translator/__pycache__/*
+c2nl/utils/__pycache__/*
+main/__pycache__/*

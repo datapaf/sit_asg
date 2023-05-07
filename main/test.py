@@ -246,6 +246,7 @@ def prepare_batch(batch, model):
     code_mask_rep = batch['code_mask_rep']
     code_len = batch['code_len']
     code_struc_rep = batch['code_struc_rep']
+    line_lens = batch['line_lens']
     if args.cuda:
         code_len = batch['code_len'].cuda(non_blocking=True)
         if code_word_rep is not None:
@@ -265,6 +266,7 @@ def prepare_batch(batch, model):
     batch_inputs['code_mask_rep'] = code_mask_rep
     batch_inputs['code_len'] = code_len
     batch_inputs['code_struc_rep'] = code_struc_rep
+    batch_inputs['line_lens'] = line_lens
     return batch_inputs
 
 
