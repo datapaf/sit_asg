@@ -119,7 +119,10 @@ def batchify(batch):
     source_maps = []
     src_vocabs = []
     for i in range(batch_size):
-        code_len_rep[i] = code_words[i].size(0)
+        if use_src_line:
+            code_len_rep[i] = len(line_lengths[i])
+        else:
+            code_len_rep[i] = code_words[i].size(0)
         if use_src_word:
             if use_src_line:
                 for lineno, line_len in enumerate(line_lengths[i]):
