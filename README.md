@@ -1,8 +1,8 @@
-# Code Summarization with Strcuture-induced Transformer
+# Code Summarization with Strcuture-induced Transformer. ASG Modification.
 
-This repo serves as the official implementation of ACL 2021 findings paper "[Code Summarization with Strcuture-induced Transformer](https://arxiv.org/pdf/2012.14710.pdf)".
+This is a version of [Strcuture-induced Transformer](https://arxiv.org/pdf/2012.14710.pdf) modified to accept Abstract Semantic Graph(ASG) as a structural input feature. 
 
-If you have any questions, be free to email me.
+Note: The modification is available only for Python.
 
 ## Dependency
 
@@ -10,26 +10,23 @@ If you have any questions, be free to email me.
 pip install -r requirements.txt
 ```
 
-
-
 ## Data
 
-For Python, we follow the pipline in https://github.com/wanyao1992/code_summarization_public.
+For reproducing the results, you can download the tokens from [here](https://drive.google.com/file/d/1iVR0WsEs3v9NLKEjBmQnaLuqccK2pyl5/view?usp=sharing) and put `python` the `data` directory.
 
-For Java, we fetch from https://github.com/xing-hu/TL-CodeSum.
-
-In the paper, we write the scripts on our own to parse code into AST. But it is a tough task. We are trying to find a nice way to do so and then experiment under SiT.
-
-For just reproducing the results, you can download the data we used directly from [here](https://drive.google.com/file/d/1iVR0WsEs3v9NLKEjBmQnaLuqccK2pyl5/view?usp=sharing) and put both `python` and `java` in the `data` directory.
-
-The `adjacency` is too large to load on my personal server. So I allocate a guid for each code snippet in `.guid` and retrieve them one by one. What you need to do is:
+To prepare the ASG adjacency matrices, unpack `adjacency.zip` archive:
 
 ```bash
-cd sit3
+cd sit_asg
 unzip adjacency.zip
 ```
 
+Unpack `lines.zip` archive to prepare lines vectors:
 
+```bash
+cd sit_asg
+unzip lines.zip
+```
 
 ## Quick Start
 
@@ -46,13 +43,6 @@ See the log through:
 vi ../modelx/YOUR_MODEL_NAME.txt
 ```
 
-In the paper, we run SiT for 150 epochs. For example in Java:
-
-```txt
-01/18/2021 01:12:25 PM: [ dev valid official: Epoch = 150 | bleu = 44.89 | rouge_l = 55.25 | Precision = 61.14 | Recall = 57.81 | F1 = 56.95 | examples = 8714 | valid time = 58.93 (s) ]
-```
-
-
 
 **Testing**
 
@@ -60,21 +50,16 @@ In the paper, we run SiT for 150 epochs. For example in Java:
 python test.py --dataset_name python --beam_size 5 --model_name YOUR_MODEL_NAME
 ```
 
-**\*\*Issue\*\***
+**Acknowledgement:** The implementation is based on https://github.com/gingasan/sit3.
 
-For Python, we do not follow the original data split in [Wei's paper](https://proceedings.neurips.cc/paper/2019/file/e52ad5c9f751f599492b4f087ed7ecfc-Paper.pdf) and consequently rerun both SiT and Transformer on our split. This is a potential drawback of the paper if comparing to other LSTM baselines. If you want the original split, please refer to https://github.com/GoneZ5/SCRIPT. Thank you.
+## Some Files Descriptions
 
+`absent_asg.txt` - contains id of the source code samples that have no corresponding ASG adjacency matrices
 
-**Acknowledgement:** The implementation is based on https://github.com/wasiahmad/NeuralCodeSum.
+`with_zero_matrices.txt` - contains id of the source code samples that have zero matrices because of having `with` statement
 
-## Citation
+`wrong_lines.txt` - contains id of the source code samples that have incorrect corresponding lines vector
 
-```latex
-@inproceedings{hongqiu2021summarization,
- author = {Hongqiu, Wu and Hai, Zhao and Min, Zhang},
- booktitle = {Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics (ACL)},
- title = {Code summarization with structure-induced transformer},
- year = {2021}
-}
-```
+`zero_matrices.txt` - contains id of the source code samples that have zero ASG adjacency matrices
 
+`ignore_guids.txt` - contains id of the source code samples (`absent_asg.txt` + `with_zero_matrices.txt` + `wrong_lines.txt`) to ignore while training and testing
